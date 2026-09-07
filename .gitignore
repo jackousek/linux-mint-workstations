@@ -1,0 +1,17 @@
+# Ansible temporary/retry files
+*.retry
+.ansible/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor temporary files
+*.swp
+*.swo
+*~
+
+# Secrets
+*.vault-password
+.vault_pass
+

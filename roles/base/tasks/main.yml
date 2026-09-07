@@ -1,0 +1,5 @@
+---
+- name: Verify managed host
+  ansible.builtin.debug:
+    msg: "Managing {{ inventory_hostname }}"
+

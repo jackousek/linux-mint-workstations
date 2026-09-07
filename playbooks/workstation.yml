@@ -1,0 +1,8 @@
+---
+- name: Configure Linux Mint workstations
+  hosts: all
+  become: true
+
+  roles:
+    - base
+
