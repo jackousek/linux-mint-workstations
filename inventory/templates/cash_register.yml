@@ -1,0 +1,18 @@
+---
+workstation_role: cash_register
+
+pokladna_register_number: 1
+
+payment_terminal:
+  enabled: false
+  ip: ""
+
+receipt_printer:
+  enabled: false
+  model: ""
+  ip: ""
+
+radio:
+  enabled: false
+  url: ""
+

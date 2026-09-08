@@ -1,0 +1,18 @@
+---
+workstation_role: server
+
+pokladna_register_number: 0
+
+payment_terminal:
+  enabled: false
+  ip: ""
+
+receipt_printer:
+  enabled: false
+  model: ""
+  ip: ""
+
+radio:
+  enabled: false
+  url: ""
+
