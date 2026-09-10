@@ -24,7 +24,7 @@ postgresql_hba_rules:
     databases: all
     users: all
     address: 127.0.0.1/32
-    method: scram-sha-256
+    method: md5
     comment: Local IPv4 connections
 
   - contype: host
