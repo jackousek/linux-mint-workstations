@@ -26,15 +26,12 @@ software_packages:
   - openssh-client
   - openssh-server
   - x11vnc
-  
+
   # Hardware diagnostics
   - smartmontools
 
   # Printing
   - cups
-
-  # Database
-  - postgresql
 
   # .NET
   - dotnet-runtime-8.0
