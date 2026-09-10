@@ -1,0 +1,3 @@
+---
+# The role installs and validates its own managed-host dependencies.
+dependencies: []
