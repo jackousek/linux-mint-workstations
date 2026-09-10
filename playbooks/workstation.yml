@@ -7,10 +7,14 @@
     - base
     - software
     - users
-    
+
+    - role: postgresql
+      tags:
+        - postgresql
+
     - role: pokladna
       tags:
         - pokladna
-    
+
     - remote_access
     - cinnamon
