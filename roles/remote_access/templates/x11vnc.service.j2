@@ -1,0 +1,21 @@
+[Unit]
+Description=x11vnc remote desktop service
+After=display-manager.service network.target
+Requires=display-manager.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/x11vnc \
+  -display {{ x11vnc_display }} \
+  -auth guess \
+  -rfbauth {{ x11vnc_password_file }} \
+  -rfbport {{ x11vnc_port }} \
+  -forever \
+  -shared \
+  -noxdamage
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target
+

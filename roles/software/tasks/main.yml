@@ -1,0 +1,60 @@
+---
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install standard workstation packages
+  ansible.builtin.apt:
+    name: "{{ software_packages }}"
+    state: present
+
+- name: Install Czech application language packages
+  ansible.builtin.apt:
+    name: "{{ software_czech_packages }}"
+    state: present
+
+- name: Remove unwanted packages
+  ansible.builtin.apt:
+    name: "{{ software_packages_absent }}"
+    state: absent
+    purge: true
+  when: software_packages_absent | length > 0
+
+- name: Create autostart directory for pokladna
+  ansible.builtin.file:
+    path: /home/pokladna/.config/autostart
+    state: directory
+    owner: pokladna
+    group: pokladna
+    mode: "0755"
+
+- name: Disable Update Manager autostart for pokladna
+  ansible.builtin.copy:
+    dest: /home/pokladna/.config/autostart/mintupdate.desktop
+    owner: pokladna
+    group: pokladna
+    mode: "0644"
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=Update Manager
+      Exec=mintupdate-launcher
+      Hidden=true
+      X-GNOME-Autostart-enabled=false
+
+- name: Disable System Reports autostart for pokladna
+  ansible.builtin.copy:
+    dest: /home/pokladna/.config/autostart/mintreport.desktop
+    owner: pokladna
+    group: pokladna
+    mode: "0644"
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=System Reports
+      Exec=mintreport
+      Hidden=true
+      X-GNOME-Autostart-enabled=false
+
+

@@ -1,0 +1,59 @@
+---
+software_packages:
+  # Administration
+  - vim
+  - git
+  - curl
+  - wget
+  - rsync
+  - ca-certificates
+  - gnupg
+  - unzip
+  - zip
+  - less
+  - htop
+  - lsof
+  - tree
+
+  # Network diagnostics
+  - iputils-ping
+  - dnsutils
+  - traceroute
+  - tcpdump
+  - nmap
+
+  # Remote administration
+  - openssh-client
+  - openssh-server
+  - x11vnc
+  
+  # Hardware diagnostics
+  - smartmontools
+
+  # Printing
+  - cups
+
+  # Database
+  - postgresql
+
+  # .NET
+  - dotnet-runtime-8.0
+
+  # Desktop applications
+  - firefox
+  - thunderbird
+  - libreoffice
+
+software_czech_packages:
+  - firefox-locale-cs
+  - thunderbird-locale-cs
+  - libreoffice-l10n-cs
+  - libreoffice-help-cs
+  - language-pack-cs
+  - language-pack-gnome-cs
+  - cinnamon-l10n
+  - hyphen-cs
+  - hunspell-cs
+  - mythes-cs
+
+software_packages_absent: []

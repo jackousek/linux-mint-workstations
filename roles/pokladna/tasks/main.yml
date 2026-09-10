@@ -1,0 +1,51 @@
+---
+- name: Check whether Pokladna is already installed
+  ansible.builtin.stat:
+    path: "{{ pokladna_install_dir }}/app/Pokladna.dll"
+  register: pokladna_installed
+
+- name: Create Pokladna installation directory
+  ansible.builtin.file:
+    path: "{{ pokladna_install_dir }}"
+    state: directory
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: "0755"
+
+- name: Deploy initial Pokladna application files
+  ansible.builtin.copy:
+    src: "{{ pokladna_artifact_dir }}/"
+    dest: "{{ pokladna_install_dir }}/"
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: preserve
+  when: not pokladna_installed.stat.exists
+
+- name: Configure Pokladna
+  ansible.builtin.template:
+    src: pokladna.config.j2
+    dest: "{{ pokladna_config_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create Pokladna configuration symlinks
+  ansible.builtin.file:
+    src: "{{ pokladna_config_file }}"
+    dest: "{{ pokladna_install_dir }}/app/{{ item }}"
+    state: link
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    force: true
+  loop:
+    - Pokladna.exe.config
+    - Pokladna.dll.config
+
+- name: Install Pokladna desktop launcher
+  ansible.builtin.template:
+    src: Pokladna.desktop.j2
+    dest: "{{ pokladna_home }}/Desktop/Pokladna.desktop"
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: "0755"
+

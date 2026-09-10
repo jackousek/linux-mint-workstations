@@ -5,4 +5,12 @@
 
   roles:
     - base
-
+    - software
+    - users
+    
+    - role: pokladna
+      tags:
+        - pokladna
+    
+    - remote_access
+    - cinnamon

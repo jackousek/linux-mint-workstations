@@ -1,0 +1,9 @@
+---
+pokladna_user: pokladna
+pokladna_group: pokladna
+pokladna_home: /home/pokladna
+pokladna_install_dir: /home/pokladna/Pokladna
+pokladna_config_file: /etc/pokladna.config
+
+pokladna_artifact_dir: /srv/ansible-artifacts/pokladna
+

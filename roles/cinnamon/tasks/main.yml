@@ -1,0 +1,33 @@
+---
+- name: Get pokladna account information
+  ansible.builtin.getent:
+    database: passwd
+    key: pokladna
+
+- name: Store pokladna UID
+  ansible.builtin.set_fact:
+    pokladna_uid: "{{ ansible_facts.getent_passwd['pokladna'][1] }}"
+
+- name: Configure Cinnamon power and lock settings for pokladna
+  become: true
+  become_user: pokladna
+  community.general.dconf:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pokladna_uid }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ pokladna_uid }}/bus"
+  loop:
+    - key: /org/cinnamon/desktop/screensaver/lock-enabled
+      value: "false"
+
+    - key: /org/cinnamon/desktop/session/idle-delay
+      value: "uint32 1800"
+
+    - key: /org/cinnamon/settings-daemon/plugins/power/sleep-inactive-ac-type
+      value: "'nothing'"
+
+    - key: /org/cinnamon/settings-daemon/plugins/power/sleep-inactive-battery-type
+      value: "'nothing'"
+

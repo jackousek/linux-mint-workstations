@@ -1,0 +1,3 @@
+---
+ansible_user: ansible
+pokladna_password_hash: "{{ vault_pokladna_password_hash }}"

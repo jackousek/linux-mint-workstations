@@ -1,0 +1,45 @@
+---
+- name: Create x11vnc configuration directory
+  ansible.builtin.file:
+    path: /etc/x11vnc
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Create x11vnc password file
+  ansible.builtin.command:
+    argv:
+      - x11vnc
+      - -storepasswd
+      - "{{ vault_x11vnc_password }}"
+      - "{{ x11vnc_password_file }}"
+  args:
+    creates: "{{ x11vnc_password_file }}"
+  no_log: true
+  notify: Restart x11vnc
+
+- name: Secure x11vnc password file
+  ansible.builtin.file:
+    path: "{{ x11vnc_password_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Install x11vnc systemd service
+  ansible.builtin.template:
+    src: x11vnc.service.j2
+    dest: /etc/systemd/system/x11vnc.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart x11vnc
+
+- name: Enable and start x11vnc
+  ansible.builtin.systemd_service:
+    name: x11vnc
+    enabled: true
+    state: started
+    daemon_reload: true

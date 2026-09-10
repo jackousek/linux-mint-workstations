@@ -3,3 +3,8 @@
   ansible.builtin.debug:
     msg: "Managing {{ inventory_hostname }}"
 
+- name: Disable Casper live media checksum service
+  ansible.builtin.systemd_service:
+    name: casper-md5check.service
+    enabled: false
+    state: stopped

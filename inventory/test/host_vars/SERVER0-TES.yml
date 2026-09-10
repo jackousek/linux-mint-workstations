@@ -16,3 +16,17 @@ radio:
   enabled: false
   url: ""
 
+pokladna_config:
+  ServerName: "193.85.147.198"
+  DBName: "pokladna"
+  UzkaTiskarna: "0"
+  UzkaTiskarnaRadkyZa: "1"
+  GrandPrix: "Ano"
+  MotivaceGl: "Ano"
+  PoklDisp: "Ne"
+  PoklDispCom: "/dev/ttyUSB*"
+  PlatTerm2: "0"
+  PlatTermCom: "192.168.1.51"
+  UzkaPort: "/dev/parport0"
+
+

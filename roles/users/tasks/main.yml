@@ -1,0 +1,110 @@
+---
+- name: Create pokladna user
+  ansible.builtin.user:
+    name: pokladna
+    comment: "Store employee account"
+    create_home: true
+    home: /home/pokladna
+    shell: /bin/bash
+    password: "{{ pokladna_password_hash }}"
+    password_lock: false
+    state: present
+    update_password: on_create
+
+- name: Configure Czech interface language for pokladna
+  ansible.builtin.copy:
+    dest: /home/pokladna/.dmrc
+    owner: pokladna
+    group: pokladna
+    mode: "0644"
+    content: |
+      [Desktop]
+      Session=cinnamon
+      Language=cs_CZ.UTF-8
+
+- name: Configure AccountsService for pokladna
+  community.general.ini_file:
+    path: /var/lib/AccountsService/users/pokladna
+    section: User
+    option: Language
+    value: cs_CZ.UTF-8
+    owner: root
+    group: root
+    mode: "0600"
+    no_extra_spaces: true
+
+- name: Configure Cinnamon session for pokladna in AccountsService
+  community.general.ini_file:
+    path: /var/lib/AccountsService/users/pokladna
+    section: User
+    option: Session
+    value: cinnamon
+    owner: root
+    group: root
+    mode: "0600"
+    no_extra_spaces: true
+
+- name: Configure Czech login language for pokladna
+  ansible.builtin.blockinfile:
+    path: /home/pokladna/.profile
+    create: true
+    owner: pokladna
+    group: pokladna
+    mode: "0644"
+    marker: "# {mark} ANSIBLE MANAGED POKLADNA LOCALE"
+    block: |
+      export LANG=cs_CZ.UTF-8
+      export LANGUAGE=cs_CZ:cs
+
+- name: Create Mint Welcome state directory for pokladna
+  ansible.builtin.file:
+    path: /home/pokladna/.linuxmint/mintwelcome
+    state: directory
+    owner: pokladna
+    group: pokladna
+    mode: "0755"
+
+- name: Disable Mint Welcome at startup for pokladna
+  ansible.builtin.file:
+    path: /home/pokladna/.linuxmint/mintwelcome/norun.flag
+    state: touch
+    owner: pokladna
+    group: pokladna
+    mode: "0644"
+    modification_time: preserve
+    access_time: preserve
+
+- name: Configure LightDM autologin for pokladna
+  ansible.builtin.template:
+    src: lightdm-autologin.conf.j2
+    dest: /etc/lightdm/lightdm.conf.d/90-pokladna-autologin.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Mark Czech locale as already processed for XDG user directories
+  ansible.builtin.copy:
+    dest: /home/pokladna/.config/user-dirs.locale
+    owner: pokladna
+    group: pokladna
+    mode: "0644"
+    content: |
+      cs_CZ
+
+- name: Configure standard XDG directories for pokladna
+  ansible.builtin.copy:
+    dest: /home/pokladna/.config/user-dirs.dirs
+    owner: pokladna
+    group: pokladna
+    mode: "0644"
+    content: |
+      XDG_DESKTOP_DIR="$HOME/Desktop"
+      XDG_DOWNLOAD_DIR="$HOME/Downloads"
+      XDG_TEMPLATES_DIR="$HOME/Templates"
+      XDG_PUBLICSHARE_DIR="$HOME/Public"
+      XDG_DOCUMENTS_DIR="$HOME/Documents"
+      XDG_MUSIC_DIR="$HOME/Music"
+      XDG_PICTURES_DIR="$HOME/Pictures"
+      XDG_VIDEOS_DIR="$HOME/Videos"
+
+
