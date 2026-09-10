@@ -1,0 +1,127 @@
+---
+- name: Validate PostgreSQL role inputs
+  ansible.builtin.assert:
+    that:
+      - workstation_role is defined
+      - workstation_role in ['server', 'cash_register']
+      - postgresql_users is sequence
+      - postgresql_users is not string
+      - postgresql_databases is sequence
+      - postgresql_databases is not string
+      - postgresql_hba_rules is sequence
+      - postgresql_hba_rules is not string
+      - postgresql_hba_additional_rules is sequence
+      - postgresql_hba_additional_rules is not string
+    fail_msg: >-
+      PostgreSQL requires workstation_role to be server or cash_register,
+      and its users, databases, and HBA rules must be lists.
+
+- name: Install PostgreSQL packages
+  ansible.builtin.apt:
+    name: "{{ postgresql_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure PostgreSQL server
+  when: postgresql_server_enabled | bool
+  block:
+    - name: Enable and start PostgreSQL
+      ansible.builtin.systemd_service:
+        name: "{{ postgresql_service_name }}"
+        enabled: true
+        state: started
+
+    - name: Find PostgreSQL HBA configuration
+      ansible.builtin.find:
+        paths: /etc/postgresql
+        patterns: pg_hba.conf
+        file_type: file
+        recurse: true
+      register: postgresql_discovered_hba_files
+      when: postgresql_pg_hba_path | length == 0
+
+    - name: Verify discovered PostgreSQL cluster
+      ansible.builtin.assert:
+        that:
+          - postgresql_discovered_hba_files.matched == 1
+        fail_msg: >-
+          Expected exactly one PostgreSQL cluster under /etc/postgresql but found
+          {{ postgresql_discovered_hba_files.matched }}. Set postgresql_pg_hba_path
+          explicitly when managing more than one cluster.
+      when: postgresql_pg_hba_path | length == 0
+
+    - name: Select PostgreSQL HBA configuration
+      ansible.builtin.set_fact:
+        postgresql_effective_pg_hba_path: >-
+          {{ postgresql_pg_hba_path
+             if postgresql_pg_hba_path | length > 0
+             else postgresql_discovered_hba_files.files[0].path }}
+
+    - name: Configure PostgreSQL listen addresses
+      become_user: postgres
+      community.postgresql.postgresql_alter_system:
+        param: listen_addresses
+        value: "{{ postgresql_listen_addresses }}"
+        login_db: postgres
+        login_unix_socket: "{{ postgresql_socket_directory }}"
+        trust_input: false
+      notify: Restart PostgreSQL
+
+    - name: Manage PostgreSQL users
+      become_user: postgres
+      community.postgresql.postgresql_user:
+        name: "{{ item.name }}"
+        password: "{{ item.password | default(omit) }}"
+        role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+        expires: "{{ item.expires | default(omit) }}"
+        conn_limit: "{{ item.conn_limit | default(omit) }}"
+        comment: "{{ item.comment | default(omit) }}"
+        no_password_changes: "{{ item.no_password_changes | default(false) }}"
+        state: "{{ item.state | default('present') }}"
+        login_db: postgres
+        login_unix_socket: "{{ postgresql_socket_directory }}"
+        trust_input: false
+      loop: "{{ postgresql_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+      environment:
+        PGOPTIONS: "-c password_encryption=scram-sha-256"
+      no_log: true
+
+    - name: Manage PostgreSQL databases
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: "{{ item.name }}"
+        owner: "{{ item.owner | default(omit) }}"
+        encoding: "{{ item.encoding | default(omit) }}"
+        lc_collate: "{{ item.lc_collate | default(omit) }}"
+        lc_ctype: "{{ item.lc_ctype | default(omit) }}"
+        template: "{{ item.template | default(omit) }}"
+        state: "{{ item.state | default('present') }}"
+        login_unix_socket: "{{ postgresql_socket_directory }}"
+        login_user: postgres
+        trust_input: false
+      loop: "{{ postgresql_databases }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Manage PostgreSQL HBA rules
+      community.postgresql.postgresql_pg_hba:
+        dest: "{{ postgresql_effective_pg_hba_path }}"
+        rules: "{{ postgresql_hba_rules + postgresql_hba_additional_rules }}"
+        overwrite: true
+        sort_rules: false
+        create: false
+        backup: true
+        owner: postgres
+        group: postgres
+        mode: "0640"
+      notify: Reload PostgreSQL
+
+- name: Disable PostgreSQL on non-server workstations
+  ansible.builtin.systemd_service:
+    name: "{{ postgresql_service_name }}"
+    enabled: false
+    state: stopped
+  when: not (postgresql_server_enabled | bool)
