@@ -1,0 +1,27 @@
+-- Managed by Ansible.
+-- Used only for initial Pokladna PostgreSQL bootstrap.
+
+\connect postgres
+
+CREATE ROLE pokladna;
+
+ALTER ROLE pokladna WITH
+    NOSUPERUSER
+    NOINHERIT
+    NOCREATEROLE
+    NOCREATEDB
+    LOGIN
+    NOREPLICATION
+    NOBYPASSRLS
+    PASSWORD '{{ vault_postgres_pokladna_password_hash }}';
+
+CREATE DATABASE pokladna
+    WITH
+    TEMPLATE = template0
+    ENCODING = 'UTF8'
+    LOCALE_PROVIDER = libc
+    LOCALE = 'en_US.UTF-8';
+
+ALTER DATABASE pokladna OWNER TO postgres;
+
+

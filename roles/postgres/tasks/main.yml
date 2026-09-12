@@ -1,0 +1,98 @@
+---
+- name: Configure PostgreSQL server
+  when: workstation_role == "server"
+  block:
+    - name: Ensure PostgreSQL is enabled and running
+      ansible.builtin.service:
+        name: postgresql
+        enabled: true
+        state: started
+
+    - name: Find active PostgreSQL configuration file
+      ansible.builtin.command:
+        cmd: psql -tAc "SHOW config_file;"
+      become: true
+      become_user: postgres
+      register: postgres_config_file
+      changed_when: false
+      check_mode: false
+
+    - name: Find active PostgreSQL pg_hba.conf
+      ansible.builtin.command:
+        cmd: psql -tAc "SHOW hba_file;"
+      become: true
+      become_user: postgres
+      register: postgres_hba_file
+      changed_when: false
+      check_mode: false
+
+    - name: Ensure PostgreSQL conf.d directory exists
+      ansible.builtin.file:
+        path: "{{ (postgres_config_file.stdout | trim) | dirname }}/conf.d"
+        state: directory
+        owner: postgres
+        group: postgres
+        mode: "0755"
+
+    - name: Configure PostgreSQL Pokladna overrides
+      ansible.builtin.template:
+        src: 99-pokladna.conf.j2
+        dest: "{{ (postgres_config_file.stdout | trim) | dirname }}/conf.d/99-pokladna.conf"
+        owner: postgres
+        group: postgres
+        mode: "0644"
+      notify: Restart PostgreSQL
+
+    - name: Configure PostgreSQL client authentication
+      ansible.builtin.template:
+        src: pg_hba.conf.j2
+        dest: "{{ postgres_hba_file.stdout | trim }}"
+        owner: postgres
+        group: postgres
+        mode: "0640"
+        backup: true
+      notify: Reload PostgreSQL
+
+    - name: Apply PostgreSQL configuration before database bootstrap
+      ansible.builtin.meta: flush_handlers
+
+    - name: Check whether Pokladna database exists
+      ansible.builtin.command:
+        cmd: psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'pokladna';"
+      become: true
+      become_user: postgres
+      register: pokladna_database_check
+      changed_when: false
+      check_mode: false
+
+    - name: Create temporary Pokladna bootstrap SQL
+      ansible.builtin.template:
+        src: postgres-pokladna.sql.j2
+        dest: /tmp/postgres-pokladna.sql
+        owner: postgres
+        group: postgres
+        mode: "0600"
+      when: pokladna_database_check.stdout | trim != "1"
+      no_log: true
+
+    - name: Initialize Pokladna database
+      ansible.builtin.command:
+        cmd: psql -v ON_ERROR_STOP=1 -f /tmp/postgres-pokladna.sql
+      become: true
+      become_user: postgres
+      when: pokladna_database_check.stdout | trim != "1"
+      no_log: true
+
+    - name: Remove temporary Pokladna bootstrap SQL
+      ansible.builtin.file:
+        path: /tmp/postgres-pokladna.sql
+        state: absent
+      when: pokladna_database_check.stdout | trim != "1"
+
+- name: Disable PostgreSQL on non-server workstations
+  ansible.builtin.service:
+    name: postgresql
+    enabled: false
+    state: stopped
+  when: workstation_role != "server"
+

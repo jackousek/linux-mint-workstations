@@ -1,0 +1,28 @@
+# PostgreSQL Client Authentication Configuration File
+# Managed by Ansible.
+# Manual changes will be overwritten.
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# PostgreSQL administration via local Unix socket
+local   all             postgres                                peer
+
+# Local Unix domain socket connections
+local   all             all                                     peer
+
+# IPv4 localhost connections
+host    all             all             127.0.0.1/32            md5
+
+# IPv6 localhost connections
+host    all             all             ::1/128                 scram-sha-256
+
+# Replication connections from localhost
+local   replication     all                                     peer
+host    replication     all             127.0.0.1/32            scram-sha-256
+host    replication     all             ::1/128                 scram-sha-256
+
+# Remote IPv4 connections
+host    all             all             0.0.0.0/0                md5
+
+
+
