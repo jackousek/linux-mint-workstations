@@ -1,4 +1,12 @@
 ---
+- name: Manage itadmin password
+  ansible.builtin.user:
+    name: itadmin
+    password: "{{ itadmin_password_hash }}"
+    password_lock: false
+    update_password: always
+    state: present
+
 - name: Create pokladna user
   ansible.builtin.user:
     name: pokladna

@@ -14,4 +14,20 @@ __pycache__/
 # Secrets
 *.vault-password
 .vault_pass
+# SSH private keys
+id_rsa
+id_ed25519
+*.pem
+*.key
+
+# Local secrets
+.env
+.env.*
+*.vault-password
+.vault_pass
+
+# Logs and backups
+*.log
+*.bak
+
 

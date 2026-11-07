@@ -3,6 +3,31 @@
   ansible.builtin.debug:
     msg: "Managing {{ inventory_hostname }}"
 
+- name: Configure security-only automatic updates
+  ansible.builtin.copy:
+    dest: /etc/mintupdate-automatic-upgrades.conf
+    content: |
+      --only-security
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable Linux Mint automatic upgrades
+  ansible.builtin.file:
+    path: /var/lib/linuxmint/mintupdate-automatic-upgrades-enabled
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+    modification_time: preserve
+    access_time: preserve
+
+- name: Enable Linux Mint automatic upgrade timer
+  ansible.builtin.systemd_service:
+    name: mintupdate-automation-upgrade.timer
+    enabled: true
+    state: started
+
 - name: Disable Casper live media checksum service
   ansible.builtin.systemd_service:
     name: casper-md5check.service

@@ -1,0 +1,32 @@
+---
+workstation_role: server
+
+pokladna_register_number: 0
+
+payment_terminal:
+  enabled: false
+  ip: ""
+
+receipt_printer:
+  enabled: false
+  model: ""
+  ip: ""
+
+radio:
+  enabled: false
+  url: ""
+
+pokladna_config:
+  ServerName: "193.85.147.198"
+  DBName: "pokladna"
+  UzkaTiskarna: "0"
+  UzkaTiskarnaRadkyZa: "1"
+  GrandPrix: "Ano"
+  MotivaceGl: "Ano"
+  PoklDisp: "Ne"
+  PoklDispCom: "/dev/ttyUSB*"
+  PlatTerm2: "0"
+  PlatTermCom: "192.168.1.51"
+  UzkaPort: "/dev/parport0"
+  PrepnoutPokladnu: "Ano"
+

@@ -57,3 +57,6 @@ software_czech_packages:
   - mythes-cs
 
 software_packages_absent: []
+
+workstation_apt_update_cache: true
+workstation_upgrade_packages: false
