@@ -1,0 +1,70 @@
+---
+- name: Ensure OpenSSH server is installed
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+
+- name: Ensure SSH service is enabled and running
+  ansible.builtin.systemd_service:
+    name: ssh
+    enabled: true
+    state: started
+
+- name: Install itadmin authorized keys
+  ansible.posix.authorized_key:
+    user: itadmin
+    key: "{{ lookup('ansible.builtin.file', role_path ~ '/files/keys/itadmin_authorized_keys') }}"
+    state: present
+    exclusive: false
+    manage_dir: true
+
+- name: Install Ansible authorized key
+  ansible.posix.authorized_key:
+    user: ansible
+    key: "{{ lookup('ansible.builtin.file', role_path ~ '/files/keys/ansible.pub') }}"
+    state: present
+    exclusive: false
+    manage_dir: true
+
+- name: Ensure Pokladna SSH directory exists
+  ansible.builtin.file:
+    path: /home/pokladna/.ssh
+    state: directory
+    owner: pokladna
+    group: pokladna
+    mode: '0700'
+
+- name: Deploy Pokladna synchronization private key
+  ansible.builtin.copy:
+    src: /home/ansible/secrets/pokladna_sync
+    dest: /home/pokladna/.ssh/id_rsa
+    owner: pokladna
+    group: pokladna
+    mode: '0600'
+  no_log: true
+
+- name: Configure Pokladna synchronization SSH connection
+  ansible.builtin.blockinfile:
+    path: /home/pokladna/.ssh/config
+    create: true
+    owner: pokladna
+    group: pokladna
+    mode: '0600'
+    insertbefore: BOF
+    marker: "# {mark} ANSIBLE MANAGED POKLADNA SYNC"
+    block: |
+      Host server.lightblue.cz
+          HostName server.lightblue.cz
+          User pokladna
+          IdentityFile ~/.ssh/id_rsa
+          IdentitiesOnly yes
+          PubkeyAcceptedAlgorithms +ssh-rsa
+
+- name: Deploy itadmin SSH private key
+  ansible.builtin.copy:
+    src: /home/ansible/secrets/itadmin_key
+    dest: /home/itadmin/.ssh/id_ed25519
+    owner: itadmin
+    group: itadmin
+    mode: '0600'
+  no_log: true

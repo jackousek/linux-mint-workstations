@@ -1,0 +1,8 @@
+---
+- name: Configure workstation SSH access
+  hosts: all
+  become: true
+
+  roles:
+    - ssh
+
