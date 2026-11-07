@@ -1,0 +1,59 @@
+---
+- name: Validate receipt printer configuration
+  ansible.builtin.assert:
+    that:
+      - receipt_printer.enabled | type_debug == 'bool'
+      - not receipt_printer.enabled or receipt_printer.model in receipt_printer_models
+    fail_msg: "Invalid receipt printer configuration in inventory."
+
+- name: Ensure pokladna belongs to printer group
+  ansible.builtin.user:
+    name: pokladna
+    groups: lp
+    append: true
+  when: receipt_printer.enabled
+
+- name: Configure receipt printer udev rules
+  ansible.builtin.template:
+    src: 99-printers.rules.j2
+    dest: /etc/udev/rules.d/99-printers.rules
+    owner: root
+    group: root
+    mode: "0644"
+  when: receipt_printer.enabled
+  notify: Reload printer udev rules
+
+- name: Check existing receipt printer rules
+  ansible.builtin.stat:
+    path: /etc/udev/rules.d/99-printers.rules
+  register: receipt_rules
+  when: not receipt_printer.enabled
+
+- name: Read existing receipt printer rules
+  ansible.builtin.slurp:
+    src: /etc/udev/rules.d/99-printers.rules
+  register: receipt_rules_content
+  when:
+    - not receipt_printer.enabled
+    - receipt_rules.stat.exists
+
+- name: Remove disabled Ansible-managed receipt printer rules
+  ansible.builtin.file:
+    path: /etc/udev/rules.d/99-printers.rules
+    state: absent
+  when:
+    - not receipt_printer.enabled
+    - receipt_rules.stat.exists
+    - "'# Managed by Ansible - do not edit manually' in (receipt_rules_content.content | b64decode)"
+  notify: Reload printer udev rules
+
+- name: Warn about unmanaged receipt printer rules
+  ansible.builtin.debug:
+    msg: "Existing unmanaged printer rules were preserved. Review them manually."
+  when:
+    - not receipt_printer.enabled
+    - receipt_rules.stat.exists
+    - "'# Managed by Ansible - do not edit manually' not in (receipt_rules_content.content | b64decode)"
+
+- name: Configure A4 network printer
+  ansible.builtin.import_tasks: a4.yml

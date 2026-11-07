@@ -1,0 +1,23 @@
+---
+receipt_printer:
+  enabled: false
+  model: ""
+
+receipt_printer_models:
+  epson:
+    vendor: "04b8"
+    product: "0e15"
+
+  printer_1fc9:
+    vendor: "1fc9"
+    product: "2016"
+
+
+# Network A4 printer
+a4_printer:
+  enabled: false
+  model: ""
+  ip: ""
+  queue: "A4"
+  default: true
+  uri: ""

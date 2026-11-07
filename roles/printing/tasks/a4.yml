@@ -1,0 +1,85 @@
+
+---
+- name: Validate A4 printer configuration
+  ansible.builtin.assert:
+    that:
+      - a4_printer.enabled | type_debug == 'bool'
+      - not a4_printer.enabled or a4_printer.model | length > 0
+      - not a4_printer.enabled or a4_printer.ip | length > 0
+      - not a4_printer.enabled or a4_printer.queue is match('^[A-Za-z0-9_-]+$')
+    fail_msg: "Invalid A4 printer configuration."
+
+- name: Configure network A4 printer
+  when: a4_printer.enabled
+  block:
+    - name: Install CUPS
+      ansible.builtin.apt:
+        name:
+          - cups
+          - cups-client
+          - cups-filters
+          - cups-ipp-utils
+        state: present
+
+    - name: Ensure CUPS is running
+      ansible.builtin.systemd_service:
+        name: cups
+        enabled: true
+        state: started
+
+    - name: Determine printer URI
+      ansible.builtin.set_fact:
+        a4_device_uri: "ipp://{{ a4_printer.ip }}/ipp/print"
+
+    - name: Check whether A4 queue exists
+      ansible.builtin.command:
+        argv:
+          - lpstat
+          - -v
+          - "{{ a4_printer.queue }}"
+      register: a4_queue
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Refuse to overwrite an existing A4 queue
+      ansible.builtin.assert:
+        that:
+          - a4_queue.rc != 0 or a4_device_uri in a4_queue.stdout
+        fail_msg: >-
+          Queue {{ a4_printer.queue }} already exists with
+          a different URI. Review it before replacing it.
+
+    - name: Create driverless IPP printer queue
+      ansible.builtin.command:
+        argv:
+          - lpadmin
+          - -p
+          - "{{ a4_printer.queue }}"
+          - -E
+          - -v
+          - "{{ a4_device_uri }}"
+          - -m
+          - everywhere
+      when: a4_queue.rc != 0
+      changed_when: true
+
+    - name: Check system default printer
+      ansible.builtin.command:
+        cmd: lpstat -d
+      register: a4_default_queue
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Set default A4 printer
+      ansible.builtin.command:
+        argv:
+          - lpadmin
+          - -d
+          - "{{ a4_printer.queue }}"
+      when:
+        - a4_printer.default | bool
+        - a4_queue.rc == 0 or not ansible_check_mode
+        - "'system default destination: ' ~ a4_printer.queue not in a4_default_queue.stdout"
+      changed_when: true

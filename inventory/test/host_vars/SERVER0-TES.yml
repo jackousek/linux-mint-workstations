@@ -9,8 +9,17 @@ payment_terminal:
 
 receipt_printer:
   enabled: false
-  model: ""
-  ip: ""
+  model: ""  # Supported models:
+             # epson       = Epson (USB ID 04b8:0e15)
+             # printer_1fc9 = Other printer (USB ID 1fc9:2016)
+
+# Network A4 printer
+a4_printer:
+  enabled: false
+  model: "LBP243dw"  # Replace with actual Canon model
+  ip: "192.168.1.254"  # Replace with actual printer IP
+  queue: "A4"
+  default: true
 
 radio:
   enabled: false
@@ -27,6 +36,6 @@ pokladna_config:
   PoklDispCom: "/dev/ttyUSB*"
   PlatTerm2: "0"
   PlatTermCom: "192.168.1.51"
-  UzkaPort: "/dev/parport0"
+  UzkaPort: "/dev/usbprinter1"
   PrepnoutPokladnu: "Ne"
 

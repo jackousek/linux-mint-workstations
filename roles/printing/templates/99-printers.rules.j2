@@ -1,0 +1,5 @@
+# Managed by Ansible - do not edit manually
+# Receipt printer: {{ receipt_printer.model }}
+
+{% set printer = receipt_printer_models[receipt_printer.model] %}
+SUBSYSTEM=="usbmisc", ATTRS{idVendor}=="{{ printer.vendor }}", ATTRS{idProduct}=="{{ printer.product }}", KERNEL=="lp*", SYMLINK+="usbprinter1", MODE="0660", GROUP="lp"
