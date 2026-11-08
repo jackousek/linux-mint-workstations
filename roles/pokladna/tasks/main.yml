@@ -49,3 +49,18 @@
     group: "{{ pokladna_group }}"
     mode: "0755"
 
+- name: Create Pokladna autostart directory
+  ansible.builtin.file:
+    path: "{{ pokladna_home }}/.config/autostart"
+    state: directory
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: "0755"
+
+- name: Enable Pokladna autostart
+  ansible.builtin.template:
+    src: Pokladna.desktop.j2
+    dest: "{{ pokladna_home }}/.config/autostart/Pokladna.desktop"
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: "0644"
