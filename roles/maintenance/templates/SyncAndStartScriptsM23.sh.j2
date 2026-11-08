@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -eu
+
+rsync -aze \
+  "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=4 -i {{ maintenance_ssh_key }}" \
+  --exclude 'Archive' \
+  --exclude 'U16' \
+  --exclude 'U24' \
+  --exclude 'Scripts' \
+  --exclude 'SyncAndStartScriptsU1*' \
+  --delete \
+  {{ maintenance_sync_user }}@{{ maintenance_sync_server }}:{{ maintenance_sync_remote_dir }}/ \
+  {{ maintenance_scripts_dir }}/
+
+{{ maintenance_scripts_dir }}/M23/StartScripts.sh

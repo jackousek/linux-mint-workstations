@@ -1,0 +1,11 @@
+---
+maintenance_scripts_dir: /root/bin/scripts
+maintenance_backup_dir: /mnt/backups
+
+maintenance_sync_server: prodejny.fann.cz
+maintenance_sync_user: pokladna
+maintenance_sync_remote_dir: /mnt/pokladna/scripts
+
+maintenance_backup_remote_dir: /mnt/backups
+
+maintenance_ssh_key: /root/.ssh/id_rsa_Mint

@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -eu
+
+BACKUP_DIR="{{ maintenance_backup_dir }}"
+HOST="$(hostname)"
+SQL_FILE="${BACKUP_DIR}/pokladna_prenos_${HOST}.sql"
+SQL_ARCHIVE="${SQL_FILE}.tar.gz"
+ETC_ARCHIVE="${BACKUP_DIR}/etc_${HOST}.tar.gz"
+
+if ! pg_isready >/dev/null 2>&1; then
+    exit 0
+fi
+
+runuser -u postgres -- \
+    pg_dump pokladna -f "${SQL_FILE}"
+
+tar czf "${SQL_ARCHIVE}" -C "${BACKUP_DIR}" "$(basename "${SQL_FILE}")"
+
+rm -f "${SQL_FILE}"
+
+tar czf "${ETC_ARCHIVE}" -C / etc
+
+rsync \
+    -az \
+    --no-perms \
+    --no-owner \
+    --no-group \
+    -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=4 -i {{ maintenance_ssh_key }}" \
+    "${BACKUP_DIR}/" \
+    {{ maintenance_sync_user }}@{{ maintenance_sync_server }}:{{ maintenance_backup_remote_dir }}/

@@ -1,0 +1,77 @@
+---
+- name: Ensure root SSH directory exists
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  tags: maintenance_key
+
+- name: Deploy maintenance SSH private key
+  ansible.builtin.copy:
+    src: /home/ansible/secrets/store_maintenance
+    dest: "{{ maintenance_ssh_key }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  tags: maintenance_key
+
+- name: Create maintenance scripts directory
+  ansible.builtin.file:
+    path: "{{ maintenance_scripts_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Create M23 scripts directory
+  ansible.builtin.file:
+    path: "{{ maintenance_scripts_dir }}/M23"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ maintenance_backup_dir }}"
+    state: directory
+    owner: postgres
+    group: root
+    mode: "0750"
+
+- name: Install script synchronization script
+  ansible.builtin.template:
+    src: SyncAndStartScriptsM23.sh.j2
+    dest: "{{ maintenance_scripts_dir }}/SyncAndStartScriptsM23.sh"
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Install Pokladna backup script
+  ansible.builtin.template:
+    src: M23/backups.sh.j2
+    dest: "{{ maintenance_scripts_dir }}/M23/backups.sh"
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Schedule script synchronization
+  ansible.builtin.cron:
+    name: "Synchronize and start store scripts"
+    user: root
+    minute: "0"
+    hour: "8,10,12,14,16,18,20,23"
+    job: "{{ maintenance_scripts_dir }}/SyncAndStartScriptsM23.sh"
+    disabled: true
+
+- name: Schedule Pokladna backup
+  ansible.builtin.cron:
+    name: "Backup Pokladna database and system configuration"
+    user: root
+    minute: "0"
+    hour: "2"
+    job: "{{ maintenance_scripts_dir }}/M23/backups.sh"
+    disabled: true
