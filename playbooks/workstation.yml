@@ -5,8 +5,8 @@
 
   roles:
     - base
-    - software
     - users
+    - software
     - ssh
 
     - role: postgres

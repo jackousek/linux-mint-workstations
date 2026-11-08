@@ -10,7 +10,7 @@
 - name: Create pokladna user
   ansible.builtin.user:
     name: pokladna
-    comment: "Store employee account"
+    comment: "Pokladna"
     create_home: true
     home: /home/pokladna
     shell: /bin/bash
@@ -18,6 +18,14 @@
     password_lock: false
     state: present
     update_password: on_create
+
+- name: Ensure pokladna home directory ownership
+  ansible.builtin.file:
+    path: "{{ pokladna_home }}"
+    state: directory
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: "0755"
 
 - name: Configure Czech interface language for pokladna
   ansible.builtin.copy:
@@ -90,6 +98,14 @@
     group: root
     mode: "0644"
 
+- name: Ensure pokladna configuration directory exists
+  ansible.builtin.file:
+    path: "{{ pokladna_home }}/.config"
+    state: directory
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: "0755"
+
 - name: Mark Czech locale as already processed for XDG user directories
   ansible.builtin.copy:
     dest: /home/pokladna/.config/user-dirs.locale
@@ -115,4 +131,20 @@
       XDG_PICTURES_DIR="$HOME/Pictures"
       XDG_VIDEOS_DIR="$HOME/Videos"
 
+- name: Create standard XDG directories for pokladna
+  ansible.builtin.file:
+    path: "{{ pokladna_home }}/{{ item }}"
+    state: directory
+    owner: "{{ pokladna_user }}"
+    group: "{{ pokladna_group }}"
+    mode: "0755"
+  loop:
+    - Desktop
+    - Downloads
+    - Templates
+    - Public
+    - Documents
+    - Music
+    - Pictures
+    - Videos
 

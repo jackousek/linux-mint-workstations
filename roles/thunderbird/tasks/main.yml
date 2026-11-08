@@ -4,6 +4,18 @@
     name: thunderbird
     state: present
 
+- name: Check Thunderbird email configuration
+  ansible.builtin.assert:
+    that:
+      - thunderbird_email_address | default('') | length > 0
+      - thunderbird_display_name | default('') | length > 0
+      - thunderbird_imap_host | default('') | length > 0
+      - thunderbird_imap_port is defined
+      - thunderbird_smtp_host | default('') | length > 0
+      - thunderbird_smtp_port is defined
+    fail_msg: "Thunderbird email configuration is incomplete."
+  when: thunderbird_email_username | default('') | trim | length > 0
+
 - name: Install Thunderbird AutoConfig loader
   ansible.builtin.copy:
     dest: /usr/lib/thunderbird/defaults/pref/autoconfig.js
@@ -13,6 +25,7 @@
     owner: root
     group: root
     mode: "0644"
+  when: thunderbird_email_username | default('') | trim | length > 0
 
 - name: Install Thunderbird AutoConfig
   ansible.builtin.template:
@@ -21,6 +34,16 @@
     owner: root
     group: root
     mode: "0644"
+  when: thunderbird_email_username | default('') | trim | length > 0
+
+- name: Remove Thunderbird AutoConfig when email is not configured
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/lib/thunderbird/defaults/pref/autoconfig.js
+    - /usr/lib/thunderbird/thunderbird.cfg
+  when: thunderbird_email_username | default('') | trim | length == 0
 
 - name: Remove obsolete Thunderbird UI helper
   ansible.builtin.file:
