@@ -1,0 +1,61 @@
+//
+// Thunderbird configuration managed by Ansible.
+// No passwords are stored here.
+//
+
+// Thunderbird requires a JavaScript comment on the first line.
+
+// Incoming IMAP account
+defaultPref("mail.server.server1.type", "imap");
+defaultPref("mail.server.server1.hostname", {{ thunderbird_imap_host | to_json }});
+defaultPref("mail.server.server1.port", {{ thunderbird_imap_port }});
+defaultPref("mail.server.server1.socketType", 3);
+defaultPref("mail.server.server1.authMethod", 3);
+defaultPref("mail.server.server1.userName", {{ thunderbird_email_username | to_json }});
+defaultPref("mail.server.server1.name", {{ thunderbird_email_address | to_json }});
+
+// Outgoing SMTP server
+defaultPref("mail.smtpserver.smtp1.hostname", {{ thunderbird_smtp_host | to_json }});
+defaultPref("mail.smtpserver.smtp1.port", {{ thunderbird_smtp_port }});
+defaultPref("mail.smtpserver.smtp1.try_ssl", 2);
+defaultPref("mail.smtpserver.smtp1.authMethod", 3);
+defaultPref("mail.smtpserver.smtp1.username", {{ thunderbird_email_username | to_json }});
+
+// Sender identity
+defaultPref("mail.identity.id1.fullName", {{ thunderbird_display_name | to_json }});
+defaultPref("mail.identity.id1.useremail", {{ thunderbird_email_address | to_json }});
+defaultPref("mail.identity.id1.smtpServer", "smtp1");
+defaultPref("mail.identity.id1.valid", true);
+
+// Connect account, identity and server
+defaultPref("mail.account.account1.server", "server1");
+defaultPref("mail.account.account1.identities", "id1");
+
+defaultPref("mail.accountmanager.accounts", "account1");
+defaultPref("mail.accountmanager.defaultaccount", "account1");
+
+defaultPref("mail.smtpservers", "smtp1");
+defaultPref("mail.smtp.defaultserver", "smtp1");
+
+// Common settings
+defaultPref("mailnews.start_page.enabled", false);
+
+// Disable default application checks
+lockPref("mail.shell.checkDefaultClient", false);
+
+// Disable Thunderbird start page
+defaultPref("mailnews.start_page.enabled", false);
+
+// Disable the new Account Hub interface
+defaultPref("mail.accounthub.enabled", false);
+
+// Display messages as a table instead of cards
+defaultPref("mail.threadpane.listview", 1);
+
+// Classic View
+defaultPref("mail.pane_config.dynamic", 0);
+
+// Table View
+defaultPref("mail.threadpane.listview", 1);
+
+

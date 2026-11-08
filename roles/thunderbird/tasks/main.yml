@@ -1,0 +1,29 @@
+---
+- name: Ensure Thunderbird is installed
+  ansible.builtin.apt:
+    name: thunderbird
+    state: present
+
+- name: Install Thunderbird AutoConfig loader
+  ansible.builtin.copy:
+    dest: /usr/lib/thunderbird/defaults/pref/autoconfig.js
+    content: |
+      pref("general.config.filename", "thunderbird.cfg");
+      pref("general.config.obscure_value", 0);
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install Thunderbird AutoConfig
+  ansible.builtin.template:
+    src: thunderbird.cfg.j2
+    dest: /usr/lib/thunderbird/thunderbird.cfg
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Remove obsolete Thunderbird UI helper
+  ansible.builtin.file:
+    path: /usr/local/libexec/thunderbird-configure-ui.py
+    state: absent
+
