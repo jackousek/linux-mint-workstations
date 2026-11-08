@@ -18,9 +18,7 @@ sudo apt install openssh-server vim
 sudo adduser ansible
 sudo usermod -aG sudo ansible
 
-export EDITOR=vim
-
-sudo visudo -f /etc/sudoers.d/ansible
+sudo EDITOR=/usr/bin/vim VISUAL=/usr/bin/vim visudo -f /etc/sudoers.d/ansible
 ansible ALL=(ALL:ALL) NOPASSWD: ALL
 
 
