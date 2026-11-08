@@ -3,7 +3,17 @@
 
 \connect postgres
 
-CREATE ROLE pokladna;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_catalog.pg_roles
+        WHERE rolname = 'pokladna'
+    ) THEN
+        CREATE ROLE pokladna;
+    END IF;
+END
+$$;
 
 ALTER ROLE pokladna WITH
     NOSUPERUSER
@@ -17,11 +27,9 @@ ALTER ROLE pokladna WITH
 
 CREATE DATABASE pokladna
     WITH
+    OWNER = pokladna
     TEMPLATE = template0
     ENCODING = 'UTF8'
     LOCALE_PROVIDER = libc
     LOCALE = 'en_US.UTF-8';
-
-ALTER DATABASE pokladna OWNER TO postgres;
-
 

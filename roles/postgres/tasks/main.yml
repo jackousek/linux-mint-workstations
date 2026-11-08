@@ -65,6 +65,32 @@
       changed_when: false
       check_mode: false
 
+    - name: Check Pokladna initialization marker
+      ansible.builtin.stat:
+        path: /var/lib/postgresql/.pokladna_initialized
+      register: pokladna_initialized_marker
+
+    - name: Refuse unmanaged existing Pokladna database
+      ansible.builtin.fail:
+        msg: >-
+          Pokladna database exists, but its initialization marker
+          is missing. Ansible cannot determine whether the database
+          is fully initialized. Verify the database before creating
+          the marker manually.
+      when:
+        - pokladna_database_check.stdout | trim == "1"
+        - not pokladna_initialized_marker.stat.exists
+
+    - name: Refuse automatic recreation of previously initialized Pokladna database
+      ansible.builtin.fail:
+        msg: >-
+          Pokladna database is missing, but this workstation was already
+          initialized. Ansible will not recreate the database automatically.
+          Investigate the missing database before continuing.
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - pokladna_initialized_marker.stat.exists
+
     - name: Create temporary Pokladna bootstrap SQL
       ansible.builtin.template:
         src: postgres-pokladna.sql.j2
@@ -72,7 +98,9 @@
         owner: postgres
         group: postgres
         mode: "0600"
-      when: pokladna_database_check.stdout | trim != "1"
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - not pokladna_initialized_marker.stat.exists
       no_log: true
 
     - name: Initialize Pokladna database
@@ -80,14 +108,57 @@
         cmd: psql -v ON_ERROR_STOP=1 -f /tmp/postgres-pokladna.sql
       become: true
       become_user: postgres
-      when: pokladna_database_check.stdout | trim != "1"
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - not pokladna_initialized_marker.stat.exists
       no_log: true
+
+    - name: Copy Pokladna baseline database
+      ansible.builtin.copy:
+        src: pokladna-bootstrap.sql
+        dest: /tmp/pokladna-bootstrap.sql
+        owner: pokladna
+        group: pokladna
+        mode: "0600"
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - not pokladna_initialized_marker.stat.exists
+
+    - name: Import Pokladna baseline database
+      ansible.builtin.command:
+        cmd: psql -v ON_ERROR_STOP=1 -d pokladna -f /tmp/pokladna-bootstrap.sql
+      become: true
+      become_user: pokladna
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - not pokladna_initialized_marker.stat.exists
+
+    - name: Mark Pokladna database as initialized
+      ansible.builtin.file:
+        path: /var/lib/postgresql/.pokladna_initialized
+        state: touch
+        owner: postgres
+        group: postgres
+        mode: "0600"
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - not pokladna_initialized_marker.stat.exists
+
+    - name: Remove temporary Pokladna baseline database
+      ansible.builtin.file:
+        path: /tmp/pokladna-bootstrap.sql
+        state: absent
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - not pokladna_initialized_marker.stat.exists
 
     - name: Remove temporary Pokladna bootstrap SQL
       ansible.builtin.file:
         path: /tmp/postgres-pokladna.sql
         state: absent
-      when: pokladna_database_check.stdout | trim != "1"
+      when:
+        - pokladna_database_check.stdout | trim != "1"
+        - not pokladna_initialized_marker.stat.exists
 
 - name: Disable PostgreSQL on non-server workstations
   ansible.builtin.service:
@@ -95,4 +166,3 @@
     enabled: false
     state: stopped
   when: workstation_role != "server"
-
