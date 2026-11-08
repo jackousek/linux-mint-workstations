@@ -26,4 +26,3 @@
   ansible.builtin.file:
     path: /usr/local/libexec/thunderbird-configure-ui.py
     state: absent
-

@@ -4,4 +4,3 @@ thunderbird_imap_port: 993
 
 thunderbird_smtp_host: mail.fann.cz
 thunderbird_smtp_port: 587
-
