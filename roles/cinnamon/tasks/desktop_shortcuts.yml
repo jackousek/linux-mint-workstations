@@ -1,0 +1,54 @@
+---
+- name: Add Firefox and Thunderbird desktop shortcuts
+  ansible.builtin.copy:
+    src: "/usr/share/applications/{{ item }}.desktop"
+    dest: "/home/pokladna/Desktop/{{ item }}.desktop"
+    remote_src: true
+    owner: pokladna
+    group: pokladna
+    mode: "0755"
+  loop:
+    - firefox
+    - thunderbird
+    - libreoffice-writer
+    - libreoffice-calc
+
+- name: Add website desktop shortcuts
+  ansible.builtin.copy:
+    dest: "/home/pokladna/Desktop/{{ item.name }}.desktop"
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name={{ item.name }}
+      Exec=firefox --new-tab {{ item.url }}
+      Icon=firefox
+      Terminal=false
+    owner: pokladna
+    group: pokladna
+    mode: "0755"
+  loop:
+    - name: Office Depot
+      url: https://online.officeo.cz/
+    - name: FANN Docházka
+      url: https://admin.fann.cz/
+
+- name: Configure Radio desktop shortcut
+  ansible.builtin.copy:
+    dest: /home/pokladna/Desktop/Radio.desktop
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=Radio
+      Exec=firefox --new-tab {{ radio.url }}
+      Icon=firefox
+      Terminal=false
+    owner: pokladna
+    group: pokladna
+    mode: "0755"
+  when: radio.enabled | default(false) | bool
+
+- name: Remove Radio shortcut when disabled
+  ansible.builtin.file:
+    path: /home/pokladna/Desktop/Radio.desktop
+    state: absent
+  when: not (radio.enabled | default(false) | bool)

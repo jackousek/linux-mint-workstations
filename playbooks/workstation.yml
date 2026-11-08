@@ -18,8 +18,17 @@
         - pokladna
 
     - remote_access
-    - cinnamon
+    - role: cinnamon
+      tags:
+        - cinnamon
+
     - role: printing
       tags:
         - printing
-  
+
+    - role: thunderbird
+      tags:
+        - thunderbird
+
+    - role: browsers
+      tags: browsers

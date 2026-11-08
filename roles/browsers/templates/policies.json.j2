@@ -1,0 +1,26 @@
+{
+  "policies": {
+    "Homepage": {
+      "URL": "https://www.fann.cz/",
+      "StartPage": "homepage"
+    },
+    "Bookmarks": [
+      {
+        "Title": "Office Depot",
+        "URL": "https://online.officeo.cz/",
+        "Placement": "toolbar"
+      }{% if radio.enabled and radio.url | length > 0 %},
+      {
+        "Title": "Radio",
+        "URL": {{ radio.url | to_json }},
+        "Placement": "toolbar"
+      }{% endif %},
+      {
+        "Title": "FAnn Docházka",
+        "URL": "https://admin.fann.cz/",
+        "Placement": "toolbar"
+      }
+    ],
+    "DisplayBookmarksToolbar": "always"
+  }
+}
