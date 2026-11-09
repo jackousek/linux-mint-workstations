@@ -1,0 +1,18 @@
+---
+# Store-specific configuration
+# Copy to inventory/test/group_vars/store_xxx.yml
+# Replace XXX with the actual three-letter store code.
+
+store_code: XXX
+
+# Thunderbird email configuration (optional)
+# Leave these variables undefined if the store has no email account.
+#
+# Example:
+# thunderbird_email_address: "xxx@fann.cz"
+# thunderbird_email_username: "xxx"
+# thunderbird_display_name: "FANN XXX"
+#
+# Never store plaintext passwords here.
+# If a password variable is needed, reference Ansible Vault.
+

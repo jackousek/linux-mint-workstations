@@ -1,0 +1,55 @@
+---
+# ============================================================
+# SERVER WORKSTATION
+# ============================================================
+# server = Main store PC with local PostgreSQL enabled.
+# client = Additional cash register, PostgreSQL disabled.
+#
+# IMPORTANT:
+# This variable controls PostgreSQL, not the hostname.
+workstation_role: server
+
+# Cash register number
+# Main server normally uses register 0.
+pokladna_register_number: 0
+
+# Payment terminal
+payment_terminal:
+  enabled: false
+  ip: ""
+
+# Receipt printer
+receipt_printer:
+  enabled: false
+  model: ""  # Supported models:
+             # epson        = Epson (USB ID 04b8:0e15)
+             # printer_1fc9 = Other printer (USB ID 1fc9:2016)
+
+# Network A4 printer
+a4_printer:
+  enabled: false
+  model: "LBP243dw"
+  ip: "192.168.1.254"
+  queue: "A4"
+  default: true
+
+# Internet radio shortcut
+radio:
+  enabled: false
+  url: ""
+
+# Pokladna application configuration
+# These parameters are written to the application's XML config.
+pokladna_config:
+  ServerName: "psqlserver.fann.cz"
+  DBName: "pokladna"
+  UzkaTiskarna: "0"
+  UzkaTiskarnaRadkyZa: "1"
+  GrandPrix: "Ano"
+  MotivaceGl: "Ano"
+  PoklDisp: "Ne"
+  PoklDispCom: "/dev/ttyUSB*"
+  PlatTerm2: "0"
+  PlatTermCom: "192.168.1.51"
+  UzkaPort: "/dev/usbprinter1"
+  PrepnoutPokladnu: "Ne"
