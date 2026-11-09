@@ -90,6 +90,11 @@
     modification_time: preserve
     access_time: preserve
 
+- name: Remove installer-generated LightDM autologin configuration
+  ansible.builtin.file:
+    path: /etc/lightdm/lightdm.conf
+    state: absent
+
 - name: Configure LightDM autologin for pokladna
   ansible.builtin.template:
     src: lightdm-autologin.conf.j2
