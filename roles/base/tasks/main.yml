@@ -3,6 +3,11 @@
   ansible.builtin.debug:
     msg: "Managing {{ inventory_hostname }}"
 
+- name: Configure workstation hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+    use: systemd
+
 - name: Configure security-only automatic updates
   ansible.builtin.copy:
     dest: /etc/mintupdate-automatic-upgrades.conf
