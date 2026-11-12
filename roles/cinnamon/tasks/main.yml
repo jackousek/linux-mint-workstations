@@ -31,5 +31,8 @@
     - key: /org/cinnamon/settings-daemon/plugins/power/sleep-inactive-battery-type
       value: "'nothing'"
 
+    - key: /org/cinnamon/desktop/input-sources/sources
+      value: "[('xkb', 'cz')]"
+
 - name: Configure desktop shortcuts
   ansible.builtin.import_tasks: desktop_shortcuts.yml
