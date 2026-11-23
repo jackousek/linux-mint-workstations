@@ -23,16 +23,22 @@ sudo EDITOR=/usr/bin/vim VISUAL=/usr/bin/vim visudo -f /etc/sudoers.d/ansible
 
 # On the Ansible server:
 
-# Copy Ansible SSH public key to the new PC
-cat ~/.ssh/ansible_ed25519.pub | \
-ssh itadmin@IP_OF_MINT_PC \
-'sudo install -d -m 700 -o ansible -g ansible /home/ansible/.ssh &&
- sudo tee /home/ansible/.ssh/authorized_keys >/dev/null &&
+# Load the Ansible public key into a shell variable
+ANSIBLE_PUBKEY="$(cat ~/.ssh/ansible_ed25519.pub)"
+
+# Install the Ansible public key on the new workstation
+ssh -t itadmin@IP_OF_MINT_PC \
+"sudo install -d -m 700 -o ansible -g ansible /home/ansible/.ssh &&
+ echo '$ANSIBLE_PUBKEY' | sudo tee /home/ansible/.ssh/authorized_keys >/dev/null &&
  sudo chown ansible:ansible /home/ansible/.ssh/authorized_keys &&
- sudo chmod 600 /home/ansible/.ssh/authorized_keys'
+ sudo chmod 600 /home/ansible/.ssh/authorized_keys"
 
 # Test SSH access
-ssh -i ~/.ssh/ansible ansible@IP_OF_MINT_PC
+ssh -i ~/.ssh/ansible_ed25519 ansible@IP_OF_MINT_PC
+
+# Test passwordless sudo
+ssh -i ~/.ssh/ansible_ed25519 ansible@IP_OF_MINT_PC 'sudo -n id'
+
 
 # Deploy workstation configuration
 ansible-playbook \
